@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "id": "materialchecklist-gametest",
+  "version": "1.0.0",
+  "name": "Material Checklist in-game test",
+  "environment": "*",
+  "entrypoints": {
+    "fabric-client-gametest": [
+      "io.github.johnnyscriptt.materialchecklist.gametest.ChecklistGameTest",
+      "io.github.johnnyscriptt.materialchecklist.gametest.StoreShotsGameTest"
+    ]
+  },
+  "depends": {
+    "materialchecklist": "*"
+  }
+}

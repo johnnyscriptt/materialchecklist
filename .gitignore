@@ -1,0 +1,29 @@
+# Gradle / Loom
+.gradle/
+build/
+out/
+run/
+remappedSrc/
+.fabric/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+bin/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Machine-specific launcher scripts (hardcode a local JDK 25 path)
+/run-client.bat
+/build-mod.bat
+
+# Upload pack outputs (the jar and the regenerable sample frame)
+/upload-pack/files/
+/upload-pack/work/
+__pycache__/

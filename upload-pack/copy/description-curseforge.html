@@ -1,0 +1,161 @@
+<h2>Material Checklist</h2>
+<p>The build video shows the material list for about two seconds. You pause, squint, alt-tab,
+write "oak planks 6 stacks" on a sticky note, and then spend the evening opening chests to see
+what you already have.</p>
+<p>Material Checklist puts that list on your screen and keeps count for you.</p>
+<h2>Get the list in</h2>
+<ul>
+<li><strong>Screenshot the video.</strong> Pause on the material list, take a screenshot, and press
+  <strong>Read latest screenshot</strong> (or drag the image onto the import window). The mod reads it with
+  built-in OCR that runs entirely on your computer: no account, no API key, nothing uploaded.
+  It knows the game's own font, slashed zeros and all, so Litematica material lists from videos
+  come through cleanly.</li>
+<li><strong>Paste it.</strong> Copy the list from a video description, a forum post or a spreadsheet. It
+  understands <code>Oak Planks 3 stacks</code>, <code>64 Stone Bricks</code>, <code>Glass Pane x 2sb</code>, <code>1sb + 3st + 5</code>,
+  <code>1,280</code>, bullets, numbering and table columns, and it shrugs off typos.</li>
+<li><strong>Drop a Litematica export.</strong> The <code>.txt</code> table and the <code>.csv</code> export both work; it takes the
+  Total column.</li>
+</ul>
+<p>Whatever you import lands on a review screen first. Lines it is sure about are green; anything it
+had to guess is marked so you can fix it before it goes on the list.</p>
+<h2>Keep track</h2>
+<ul>
+<li><strong>A live checklist on your HUD.</strong> Each item shows what you have against what you need, in
+  stacks and shulker boxes, missing items first, ticked off as you gather.</li>
+<li><strong>Your inventory counts automatically,</strong> including the contents of shulker boxes you carry.</li>
+<li><strong>Mark the containers you're filling.</strong> Press <strong>K</strong> while looking at a chest, barrel or shulker
+  box, or click <strong>Track</strong> at the top of its screen. Everything inside it, shulkers inside chests
+  included, now counts toward the list. Marked containers keep counting when you walk away; the
+  mod remembers what they held. Your ender chest counts too, if you like.</li>
+<li><strong>Tick things off by hand</strong> for anything you sourced some other way.</li>
+</ul>
+<h2>Find what's missing</h2>
+<p>Press <strong>J</strong> (or <strong>Find items</strong>) and every container within range that holds something still
+missing from your list pulses gold, through walls. Open one and the useful stacks are ringed, so
+you don't have to read every slot. The HUD marks which missing items turned up nearby.</p>
+<h2>Keys</h2>
+<table>
+
+<tr>
+<th>Key</th>
+<th>Does</th>
+</tr>
+
+
+<tr>
+<td>B</td>
+<td>Open the checklist: your lists, import, edit, settings</td>
+</tr>
+<tr>
+<td>N</td>
+<td>Show or hide the HUD</td>
+</tr>
+<tr>
+<td>K</td>
+<td>Track or untrack the container you're looking at</td>
+</tr>
+<tr>
+<td>J</td>
+<td>Find missing items in nearby containers</td>
+</tr>
+
+</table>
+<p>All rebindable in Options, Controls, under <strong>Material Checklist</strong>.</p>
+<h2>Multiplayer</h2>
+<p>Vanilla never tells your client what's in a chest you haven't opened, so tracking and Find run
+on the server. One jar, both sides.</p>
+<table>
+
+<tr>
+<th>Where</th>
+<th>What works</th>
+</tr>
+
+
+<tr>
+<td>Singleplayer</td>
+<td>Everything</td>
+</tr>
+<tr>
+<td>LAN world you host</td>
+<td>Everything</td>
+</tr>
+<tr>
+<td>Server with the mod</td>
+<td>Everything</td>
+</tr>
+<tr>
+<td>Server without the mod</td>
+<td>Lists, import, the HUD and inventory counting. Tracking and Find say the server needs the mod</td>
+</tr>
+
+</table>
+<p>The server side is careful with other people's hardware: requests are rate-limited, the scan
+reads the block-entity list each loaded chunk already keeps, it never loads chunks, it never
+opens unopened structure loot (reading a slot is what rolls it), and each list can track at
+most 256 containers.</p>
+<h2>Settings</h2>
+<p>In the checklist's <strong>Settings</strong> screen, saved to <code>config/materialchecklist.json</code>:</p>
+<table>
+
+<tr>
+<th>Setting</th>
+<th>Default</th>
+</tr>
+
+
+<tr>
+<td>HUD on or off</td>
+<td>On</td>
+</tr>
+<tr>
+<td>HUD corner</td>
+<td>Top right</td>
+</tr>
+<tr>
+<td>HUD rows</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Hide finished items on the HUD</td>
+<td>Off</td>
+</tr>
+<tr>
+<td>Show amounts in stacks</td>
+<td>On</td>
+</tr>
+<tr>
+<td>Count ender chest</td>
+<td>On</td>
+</tr>
+<tr>
+<td>Glow missing items in containers</td>
+<td>On</td>
+</tr>
+<tr>
+<td>Find radius</td>
+<td>16 blocks (8 to 64)</td>
+</tr>
+
+</table>
+<p>Lists are saved per game install in <code>config/materialchecklist/projects/</code>, so a list made in a
+creative test world is still there in survival.</p>
+<h2>Requires</h2>
+<ul>
+<li>Minecraft <strong>26.3</strong></li>
+<li>Fabric Loader <strong>0.19.5</strong> or newer</li>
+<li><strong>Fabric API</strong></li>
+<li><strong>Java 25</strong></li>
+</ul>
+<p>The jar is about 29 MB because it carries the OCR engine (Tesseract) for Windows, macOS and
+Linux. It loads only the first time you read a screenshot.</p>
+<h2>Not there yet</h2>
+<ul>
+<li>OCR is English only, and reads printed text, not handwriting.</li>
+<li>Items are matched by type, so an enchanted pickaxe and a plain one count as the same thing.</li>
+<li>A shulker box you mark counts where it is placed; pick it up and it counts from your
+  inventory instead, but place it somewhere new and you'll want to mark it again.</li>
+</ul>
+<h2>License</h2>
+<p>MIT. The bundled OCR engine is Tesseract (Apache 2.0) with Leptonica, through JavaCPP; see
+<code>THIRD-PARTY-NOTICES.md</code> in the source.</p>

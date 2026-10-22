@@ -1,0 +1,97 @@
+plugins {
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
+    id 'java'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+loom {
+    // Creates a client-only source set (src/client) so client code never loads on a server.
+    splitEnvironmentSourceSets()
+
+    mods {
+        "materialchecklist" {
+            sourceSet sourceSets.main
+            sourceSet sourceSets.client
+        }
+    }
+}
+
+// In-game smoke test (src/gametest): builds scenes, drives the HUD, tracking and Find, and
+// screenshots them for the store pages. Run with: gradlew runClientGameTest
+// The gametest source set is not part of the shipped jar.
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = "materialchecklist-gametest"
+        enableGameTests = false
+        enableClientGameTests = true
+        eula = true
+    }
+}
+
+def ocrPlatforms = ['windows-x86_64', 'macosx-arm64', 'macosx-x86_64', 'linux-x86_64']
+
+configurations {
+    ocrLibs { transitive = false }
+    implementation.extendsFrom ocrLibs
+    include.extendsFrom ocrLibs
+}
+
+// The store-shot gametest reads the upload pack's sample Litematica frame through the real
+// screenshot import, if make_litematica_frame.py has produced one.
+tasks.matching { it.name == "runClientGameTest" }.configureEach {
+    systemProperty "materialchecklist.storeFrame", file("upload-pack/work/litematica-frame.png").absolutePath
+}
+
+dependencies {
+    // Minecraft 26.3 ships unobfuscated — no Yarn/mappings dependency needed.
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+    // Offline OCR: Tesseract through the JavaCPP presets. The natives for each desktop
+    // platform ride inside the mod jar (jar-in-jar) and are unpacked by JavaCPP on first use.
+    ocrLibs "org.bytedeco:javacpp:${project.javacpp_version}"
+    ocrLibs "org.bytedeco:leptonica:${project.leptonica_version}"
+    ocrLibs "org.bytedeco:tesseract:${project.tesseract_version}"
+    for (String platform : ocrPlatforms) {
+        ocrLibs "org.bytedeco:javacpp:${project.javacpp_version}:${platform}"
+        ocrLibs "org.bytedeco:leptonica:${project.leptonica_version}:${platform}"
+        ocrLibs "org.bytedeco:tesseract:${project.tesseract_version}:${platform}"
+    }
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.11.3'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+processResources {
+    inputs.property "version", project.version
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    it.options.release = 25
+}
+
+// The bundled OCR components' licenses travel with the jar.
+jar {
+    from("LICENSE", "THIRD-PARTY-NOTICES.md")
+}
+
+java {
+    withSourcesJar()
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
+}

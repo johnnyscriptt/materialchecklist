@@ -1,0 +1,10 @@
+PRIMARY (use this one), 181 characters
+Paste, import or screenshot a build's material list and get a live checklist on your HUD. Track the shulkers you're filling, and light up nearby chests holding what's still missing.
+
+ALT 1, leads with the problem, 172 characters
+The video shows the material list for two seconds. Screenshot it, and Material Checklist reads it, puts it on your HUD, and counts your inventory and storage as you gather.
+
+ALT 2, leads with the mechanic, 150 characters
+A material checklist on your HUD: import a list by paste, Litematica export or screenshot, mark your storage, and find missing items in nearby chests.
+
+Modrinth caps the summary at 256 characters; CurseForge at 255. All three fit both.

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "id": "materialchecklist",
+  "version": "${version}",
+  "name": "Material Checklist",
+  "description": "Paste, import or screenshot a build's material list and get a live checklist on your HUD. Track the chests and shulkers you're filling, and light up nearby chests that hold what's still missing.",
+  "icon": "assets/materialchecklist/icon.png",
+  "authors": [
+    "johnnyscriptt"
+  ],
+  "contact": {
+    "homepage": "https://github.com/johnnyscriptt/materialchecklist",
+    "sources": "https://github.com/johnnyscriptt/materialchecklist",
+    "issues": "https://github.com/johnnyscriptt/materialchecklist/issues"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "io.github.johnnyscriptt.materialchecklist.MaterialChecklistMod"
+    ],
+    "client": [
+      "io.github.johnnyscriptt.materialchecklist.client.MaterialChecklistClient"
+    ]
+  },
+  "mixins": [
+    {
+      "config": "materialchecklist.client.mixins.json",
+      "environment": "client"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "fabric-api": "*",
+    "minecraft": "~26.3",
+    "java": ">=25"
+  }
+}
