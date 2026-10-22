@@ -9,7 +9,7 @@ Player-facing details are in [`upload-pack/copy/description-modrinth.md`](upload
 
 ## Keys
 
-B opens the checklist, N toggles the HUD, K tracks the container you're looking at, J finds
+B opens the checklist, N toggles the HUD, Y tracks the container you're looking at, J finds
 missing items nearby. All rebindable.
 
 ## Building

@@ -18,8 +18,19 @@ public final class GlyphSet {
     public static final String NUMBER_CHARS = "0123456789,.x_";
     static final int ROWS = 8;
 
-    record Glyph(char character, boolean[][] ink, int width) {
+    /** @param penalty added to its match distance; a second font only wins by a clear margin */
+    record Glyph(char character, boolean[][] ink, int width, double penalty) {
+        Glyph(char character, boolean[][] ink, int width) {
+            this(character, ink, width, 0.0);
+        }
     }
+
+    /**
+     * How much better a second font's glyph must fit to beat the first font's. About two cells of
+     * a digit: enough that blur can't flip a vanilla digit, small next to how differently a
+     * resource pack actually draws its numbers.
+     */
+    static final double SECOND_FONT_PENALTY = 0.05;
 
     private final List<Glyph> glyphs;
 
@@ -43,6 +54,19 @@ public final class GlyphSet {
 
     public boolean isEmpty() {
         return glyphs.isEmpty();
+    }
+
+    /**
+     * Both sets' shapes together, the first preferred. Screenshots of videos show the vanilla
+     * font while the player may run a resource pack with its own; reading against both covers
+     * either, and the penalty keeps a blurred vanilla digit from turning into a pack one.
+     */
+    public static GlyphSet union(GlyphSet a, GlyphSet b) {
+        List<Glyph> all = new ArrayList<>(a.glyphs);
+        for (Glyph glyph : b.glyphs) {
+            all.add(new Glyph(glyph.character(), glyph.ink(), glyph.width(), glyph.penalty() + SECOND_FONT_PENALTY));
+        }
+        return new GlyphSet(all);
     }
 
     /** @param patterns rows of '#' (ink) and '.' per character, eight rows each */

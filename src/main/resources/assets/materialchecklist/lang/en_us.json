@@ -20,7 +20,7 @@
   "materialchecklist.screen.remove": "Remove",
   "materialchecklist.screen.no_lists": "No lists yet. Press Import... to paste, drop or screenshot one, or New list to start from scratch.",
   "materialchecklist.screen.empty": "This list is empty. Use Import... to read a list, or Add item... to add things one at a time.",
-  "materialchecklist.screen.summary": "%s of %s done, %s%% gathered, %s containers tracked",
+  "materialchecklist.screen.summary": "%s of %s done, %s%% gathered, tracked containers: %s",
   "materialchecklist.screen.summary_no_server": "%s of %s done, %s%% gathered. This server doesn't have the mod, so only your inventory counts",
   "materialchecklist.screen.breakdown": "%s: %s carried + %s in tracked storage = %s of %s",
   "materialchecklist.screen.delete_title": "Delete this list?",

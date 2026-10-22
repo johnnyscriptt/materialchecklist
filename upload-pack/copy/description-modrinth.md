@@ -27,7 +27,7 @@ had to guess is marked so you can fix it before it goes on the list.
 - **A live checklist on your HUD.** Each item shows what you have against what you need, in
   stacks and shulker boxes, missing items first, ticked off as you gather.
 - **Your inventory counts automatically,** including the contents of shulker boxes you carry.
-- **Mark the containers you're filling.** Press **K** while looking at a chest, barrel or shulker
+- **Mark the containers you're filling.** Press **Y** while looking at a chest, barrel or shulker
   box, or click **Track** at the top of its screen. Everything inside it, shulkers inside chests
   included, now counts toward the list. Marked containers keep counting when you walk away; the
   mod remembers what they held. Your ender chest counts too, if you like.
@@ -45,7 +45,7 @@ you don't have to read every slot. The HUD marks which missing items turned up n
 | --- | --- |
 | B | Open the checklist: your lists, import, edit, settings |
 | N | Show or hide the HUD |
-| K | Track or untrack the container you're looking at |
+| Y | Track or untrack the container you're looking at |
 | J | Find missing items in nearby containers |
 
 All rebindable in Options, Controls, under **Material Checklist**.
@@ -84,6 +84,12 @@ In the checklist's **Settings** screen, saved to `config/materialchecklist.json`
 
 Lists are saved per game install in `config/materialchecklist/projects/`, so a list made in a
 creative test world is still there in survival.
+
+## Plays well with
+
+Tested in a real launcher alongside Sodium, Iris (shader packs on and off), Litematica, MiniHUD,
+Freecam and a Faithful 32x resource pack. With a shader pack on, the highlights switch to a glow
+that shaders draw. The default keys stay clear of all of those.
 
 ## Requires
 

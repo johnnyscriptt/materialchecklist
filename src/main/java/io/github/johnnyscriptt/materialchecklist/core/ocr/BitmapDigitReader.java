@@ -171,6 +171,7 @@ public final class BitmapDigitReader {
             double distance = (double) mismatches / (glyph.width() * GlyphSet.ROWS)
                     + 0.04 * Math.abs(glyph.width() - fontWidth);
             distance = Math.min(distance, shadowedDistance(ink, glyph, x0, fontWidth, top, s));
+            distance += glyph.penalty();
             if (best == null || distance < best.distance) {
                 best = new Match(glyph.character(), distance);
             }

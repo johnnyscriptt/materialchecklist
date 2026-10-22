@@ -5,6 +5,7 @@ import io.github.johnnyscriptt.materialchecklist.MaterialChecklistMod;
 import io.github.johnnyscriptt.materialchecklist.client.config.ConfigIo;
 import io.github.johnnyscriptt.materialchecklist.client.hud.ChecklistHud;
 import io.github.johnnyscriptt.materialchecklist.client.net.ClientNet;
+import io.github.johnnyscriptt.materialchecklist.client.ocr.GameFont;
 import io.github.johnnyscriptt.materialchecklist.client.render.HighlightRenderer;
 import io.github.johnnyscriptt.materialchecklist.client.ui.ChecklistScreen;
 import io.github.johnnyscriptt.materialchecklist.client.ui.ContainerTrackButton;
@@ -30,7 +31,7 @@ public final class MaterialChecklistClient implements ClientModInitializer {
     public static final KeyMapping HUD_KEY =
             new KeyMapping("key.materialchecklist.hud", InputConstants.KEY_N, CATEGORY);
     public static final KeyMapping TRACK_KEY =
-            new KeyMapping("key.materialchecklist.track", InputConstants.KEY_K, CATEGORY);
+            new KeyMapping("key.materialchecklist.track", InputConstants.KEY_Y, CATEGORY);
     public static final KeyMapping FIND_KEY =
             new KeyMapping("key.materialchecklist.find", InputConstants.KEY_J, CATEGORY);
 
@@ -52,6 +53,7 @@ public final class MaterialChecklistClient implements ClientModInitializer {
             TrackedController.clear();
             FindController.clear();
             ItemIndex.invalidate();
+            GameFont.invalidate(); // the next world may come with different resource packs
         });
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {

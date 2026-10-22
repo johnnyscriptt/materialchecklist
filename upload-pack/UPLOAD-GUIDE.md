@@ -103,7 +103,7 @@ OCR for reading screenshots, open source, Apache 2.0, nothing is downloaded at r
 ## Before you upload
 
 1. **Play it in the launcher** (the jar is already in `.minecraft\mods`): press B, import a list,
-   K a chest, J to find, and try **Read latest screenshot** on a real YouTube frame
+   Y on a chest, J to find, and try **Read latest screenshot** on a real YouTube frame
    (Win+Shift+S saves to Pictures\Screenshots, which the button checks).
 2. **macOS and Linux OCR are untested.** The natives are bundled and load the same way, but they
    have only been run on Windows. Worth one try on the Mac before announcing.

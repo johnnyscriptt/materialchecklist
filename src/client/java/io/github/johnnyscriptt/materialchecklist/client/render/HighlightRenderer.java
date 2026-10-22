@@ -14,6 +14,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.rendertype.RenderType;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.AABB;
@@ -56,6 +57,9 @@ public final class HighlightRenderer {
 
     /** Lift the overlay just off the model so it never z-fights at arm's length. */
     private static final double INFLATE = 0.004;
+    private static final double SHADER_INFLATE = 0.03;
+    private static final float SHADER_TRACKED_ALPHA = 0.45f;
+    private static final float SHADER_FIND_PEAK_ALPHA = 0.6f;
 
     private HighlightRenderer() {
     }
@@ -75,40 +79,48 @@ public final class HighlightRenderer {
         Vec3 cam = ctx.levelState().cameraRenderState.pos;
         PoseStack poses = ctx.poseStack();
 
+        boolean shaders = ShaderCompat.shaderPackInUse();
         HighlightState tracked = TrackedController.state(client);
         if (ConfigIo.get().hudVisible && tracked.visibleIn(dimension, now)) {
-            int alpha = Math.round(255 * TRACKED_ALPHA);
-            submit(ctx, poses, level, cam, tracked, BLUE, alpha, false);
+            int alpha = Math.round(255 * (shaders ? SHADER_TRACKED_ALPHA : TRACKED_ALPHA));
+            submit(ctx, poses, level, cam, tracked, BLUE, alpha, false, shaders);
         }
 
         HighlightState found = FindController.state();
         if (found.visibleIn(dimension, now)) {
             float strength = found.fadeAlpha(now) * Pulse.at(now, PULSE_PERIOD_MS, PULSE_FLOOR);
-            int alpha = Math.clamp(Math.round(255 * FIND_PEAK_ALPHA * strength), 0, 255);
+            float peak = shaders ? SHADER_FIND_PEAK_ALPHA : FIND_PEAK_ALPHA;
+            int alpha = Math.clamp(Math.round(255 * peak * strength), 0, 255);
             if (alpha > 0) {
-                submit(ctx, poses, level, cam, found, GOLD, alpha, true);
+                submit(ctx, poses, level, cam, found, GOLD, alpha, true, shaders);
             }
         }
     }
 
     private static void submit(LevelRenderContext ctx, PoseStack poses, ClientLevel level, Vec3 cam,
-                               HighlightState state, int rgb, int alpha, boolean xray) {
+                               HighlightState state, int rgb, int alpha, boolean xray, boolean shaders) {
         long[] mins = state.mins();
         long[] maxs = state.maxs();
         int r = (rgb >> 16) & 0xFF;
         int g = (rgb >> 8) & 0xFF;
         int b = rgb & 0xFF;
+        // Under an Iris shader pack the debug-quad pipeline isn't drawn at all, so use the
+        // lightning pipeline, which Iris does handle. It blends additively, so it reads as a glow
+        // rather than a tint and needs more strength; both faces are emitted in case it culls,
+        // and it sits further off the block, since shader packs resolve depth more coarsely.
+        RenderType type = shaders ? RenderTypes.lightning() : RenderTypes.debugQuads();
+        double inflate = shaders ? SHADER_INFLATE : INFLATE;
         // No translate: vertices are emitted already relative to the camera, which also keeps
         // them small enough to stay precise in the float matrix far from spawn.
-        ctx.submitNodeCollector().submitCustomGeometry(poses, RenderTypes.debugQuads(), (pose, vc) -> {
+        ctx.submitNodeCollector().submitCustomGeometry(poses, type, (pose, vc) -> {
             for (int i = 0; i < mins.length; i++) {
                 AABB box = overlayBounds(level, mins[i], maxs[i]);
-                double x1 = box.minX - INFLATE - cam.x;
-                double y1 = box.minY - INFLATE - cam.y;
-                double z1 = box.minZ - INFLATE - cam.z;
-                double x2 = box.maxX + INFLATE - cam.x;
-                double y2 = box.maxY + INFLATE - cam.y;
-                double z2 = box.maxZ + INFLATE - cam.z;
+                double x1 = box.minX - inflate - cam.x;
+                double y1 = box.minY - inflate - cam.y;
+                double z1 = box.minZ - inflate - cam.z;
+                double x2 = box.maxX + inflate - cam.x;
+                double y2 = box.maxY + inflate - cam.y;
+                double z2 = box.maxZ + inflate - cam.z;
                 double cx = (x1 + x2) * 0.5;
                 double cy = (y1 + y2) * 0.5;
                 double cz = (z1 + z2) * 0.5;
@@ -120,7 +132,7 @@ public final class HighlightRenderer {
                 emitFaces(pose, vc, faces,
                         (float) (x1 * scale), (float) (y1 * scale), (float) (z1 * scale),
                         (float) (x2 * scale), (float) (y2 * scale), (float) (z2 * scale),
-                        r, g, b, alpha);
+                        r, g, b, alpha, shaders);
             }
         });
     }
@@ -155,33 +167,39 @@ public final class HighlightRenderer {
 
     private static void emitFaces(PoseStack.Pose pose, VertexConsumer vc, int faces,
                                   float x1, float y1, float z1, float x2, float y2, float z2,
-                                  int r, int g, int b, int a) {
+                                  int r, int g, int b, int a, boolean bothSides) {
         if ((faces & BoxFaces.MIN_X) != 0) {
-            quad(pose, vc, r, g, b, a, x1, y1, z1, x1, y2, z1, x1, y2, z2, x1, y1, z2);
+            quad(pose, vc, r, g, b, a, bothSides, x1, y1, z1, x1, y2, z1, x1, y2, z2, x1, y1, z2);
         }
         if ((faces & BoxFaces.MAX_X) != 0) {
-            quad(pose, vc, r, g, b, a, x2, y1, z1, x2, y1, z2, x2, y2, z2, x2, y2, z1);
+            quad(pose, vc, r, g, b, a, bothSides, x2, y1, z1, x2, y1, z2, x2, y2, z2, x2, y2, z1);
         }
         if ((faces & BoxFaces.MIN_Y) != 0) {
-            quad(pose, vc, r, g, b, a, x1, y1, z1, x1, y1, z2, x2, y1, z2, x2, y1, z1);
+            quad(pose, vc, r, g, b, a, bothSides, x1, y1, z1, x1, y1, z2, x2, y1, z2, x2, y1, z1);
         }
         if ((faces & BoxFaces.MAX_Y) != 0) {
-            quad(pose, vc, r, g, b, a, x1, y2, z1, x2, y2, z1, x2, y2, z2, x1, y2, z2);
+            quad(pose, vc, r, g, b, a, bothSides, x1, y2, z1, x2, y2, z1, x2, y2, z2, x1, y2, z2);
         }
         if ((faces & BoxFaces.MIN_Z) != 0) {
-            quad(pose, vc, r, g, b, a, x1, y1, z1, x2, y1, z1, x2, y2, z1, x1, y2, z1);
+            quad(pose, vc, r, g, b, a, bothSides, x1, y1, z1, x2, y1, z1, x2, y2, z1, x1, y2, z1);
         }
         if ((faces & BoxFaces.MAX_Z) != 0) {
-            quad(pose, vc, r, g, b, a, x1, y1, z2, x1, y2, z2, x2, y2, z2, x2, y1, z2);
+            quad(pose, vc, r, g, b, a, bothSides, x1, y1, z2, x1, y2, z2, x2, y2, z2, x2, y1, z2);
         }
     }
 
-    private static void quad(PoseStack.Pose pose, VertexConsumer vc, int r, int g, int b, int a,
+    private static void quad(PoseStack.Pose pose, VertexConsumer vc, int r, int g, int b, int a, boolean bothSides,
                              float ax, float ay, float az, float bx, float by, float bz,
                              float cx, float cy, float cz, float dx, float dy, float dz) {
         vc.addVertex(pose, ax, ay, az).setColor(r, g, b, a);
         vc.addVertex(pose, bx, by, bz).setColor(r, g, b, a);
         vc.addVertex(pose, cx, cy, cz).setColor(r, g, b, a);
         vc.addVertex(pose, dx, dy, dz).setColor(r, g, b, a);
+        if (bothSides) {
+            vc.addVertex(pose, dx, dy, dz).setColor(r, g, b, a);
+            vc.addVertex(pose, cx, cy, cz).setColor(r, g, b, a);
+            vc.addVertex(pose, bx, by, bz).setColor(r, g, b, a);
+            vc.addVertex(pose, ax, ay, az).setColor(r, g, b, a);
+        }
     }
 }

@@ -22,13 +22,15 @@ All notable changes to this project are documented here. The format follows
 - A HUD checklist: have against need for every item, in stacks and shulker boxes, missing items
   first, with a progress bar. Corner, row count and hide-finished are configurable.
 - Inventory counting, including the contents of carried shulker boxes.
-- Container tracking: mark chests, barrels and shulker boxes with K or the Track button; their
+- Container tracking: mark chests, barrels and shulker boxes with Y or the Track button; their
   contents, nested shulkers included, count toward the list, and keep counting from a saved
   snapshot while their chunk is unloaded. Optional ender chest counting.
 - Find items (J): every nearby container holding something still missing pulses gold through
   walls, and the matching slots glow when it is opened.
 - Several lists at once, saved per game install, with manual tick-off, editable amounts and an
   item picker.
+- Works with Iris shader packs (highlights switch to a glow shaders draw), and reads amounts against
+  both the vanilla font and a resource pack's font. Default keys avoid Iris, Litematica and MiniHUD.
 
 ### Known limitations
 

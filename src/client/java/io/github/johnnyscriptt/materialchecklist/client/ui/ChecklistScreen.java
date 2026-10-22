@@ -36,6 +36,7 @@ public final class ChecklistScreen extends Screen {
 
     private static final int TEXT = 0xFFFFFFFF;
     private static final int FAINT = 0xFFA0A0A0;
+    private static final int SUMMARY = 0xFFD0D0D0;
     private static final int ACTIVE_BG = 0x50FFFFFF;
     private static final int HOVER_BG = 0x25FFFFFF;
     private static final int PANEL_BG = 0x60000000;
@@ -163,7 +164,9 @@ public final class ChecklistScreen extends Screen {
                             : "materialchecklist.screen.summary_no_server",
                     progress.doneCount(), progress.total(), Math.round(progress.fraction() * 100),
                     TrackedController.count());
-            g.text(this.font, trim(summary.getString(), rw), rx, TOP + 24, modded ? FAINT : WARNING, false);
+            // A dark strip behind it: over a bright sky the grey text was all but invisible.
+            g.fill(rx, TOP + 20, rx + rw, TOP + 36, PANEL_BG);
+            g.text(this.font, trim(summary.getString(), rw - 8), rx + 4, TOP + 24, modded ? SUMMARY : WARNING, false);
         }
 
         // Entries
