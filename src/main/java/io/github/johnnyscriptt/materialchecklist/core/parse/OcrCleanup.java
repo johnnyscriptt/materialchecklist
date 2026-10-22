@@ -66,7 +66,32 @@ public final class OcrCleanup {
             }
         }
         flush(parts, cell);
+        if (!parts.isEmpty()) {
+            parts.set(0, dropIconScraps(parts.getFirst()));
+        }
         return String.join(BREAK, parts);
+    }
+
+    /**
+     * An item icon in front of the name comes back as a scrap: "e", "be", "(P", "___". A token
+     * of at most two characters with no digit, or with no letter at all, is dropped while a
+     * word follows it.
+     */
+    private static String dropIconScraps(String firstCell) {
+        String[] tokens = firstCell.split(" ");
+        int start = 0;
+        while (start < tokens.length - 1 && isScrap(tokens[start])
+                && !tokens[start + 1].isEmpty() && Character.isLetter(tokens[start + 1].charAt(0))) {
+            start++;
+        }
+        return String.join(" ", java.util.Arrays.copyOfRange(tokens, start, tokens.length));
+    }
+
+    private static boolean isScrap(String token) {
+        if (HAS_DIGIT.matcher(token).find()) {
+            return false;
+        }
+        return token.length() <= 2 || !WORD.matcher(token).find() && token.chars().noneMatch(Character::isLetter);
     }
 
     private static void flush(List<String> parts, StringBuilder cell) {

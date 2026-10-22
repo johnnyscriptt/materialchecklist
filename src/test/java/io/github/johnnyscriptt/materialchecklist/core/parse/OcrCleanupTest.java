@@ -35,6 +35,18 @@ class OcrCleanupTest {
     }
 
     @Test
+    void dropsTheScrapsAnItemIconLeavesBeforeTheName() {
+        assertEquals("Sandstone\t9", OcrCleanup.clean("e Sandstone\t9"));
+        assertEquals("Observer\t94", OcrCleanup.clean("be Observer\t94"));
+        assertEquals("Block of Redstone\t39", OcrCleanup.clean("(P Block of Redstone\t39"));
+        assertEquals("Obsidian\t4", OcrCleanup.clean("___ Obsidian\t4"));
+        // Real short words and amounts at the start stay.
+        assertEquals("TNT 5", OcrCleanup.clean("TNT 5"));
+        assertEquals("64 Oak Log", OcrCleanup.clean("64 Oak Log"));
+        assertEquals("x64 Glass", OcrCleanup.clean("x64 Glass"));
+    }
+
+    @Test
     void dropsLinesWithNoWordInThem() {
         assertEquals("Glass 12", OcrCleanup.clean("~~ -- ..\nGlass 12\n|| 1 ||\n  \n"));
     }

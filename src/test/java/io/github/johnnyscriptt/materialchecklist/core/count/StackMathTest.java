@@ -48,6 +48,7 @@ class StackMathTest {
         assertEquals(OptionalLong.of(64), StackMath.parse("64x", STACK));
         assertEquals(OptionalLong.of(19 * 64 + 18), StackMath.parse("19 x 64 + 18", STACK));
         assertEquals(OptionalLong.of(3 * 64), StackMath.parse("3×64", STACK));
+        assertEquals(OptionalLong.of(2 * SHULKER), StackMath.parse("x 2sb", STACK));
     }
 
     @Test
@@ -73,6 +74,16 @@ class StackMathTest {
         assertEquals(OptionalLong.of(1234), StackMath.parse("1234 (19 x 64 + 18)", STACK));
         assertEquals(OptionalLong.of(1234), StackMath.parse("1234 = 19 x 64 + 18", STACK));
         assertEquals(OptionalLong.of(1234), StackMath.parse("(19 x 64 + 18)", STACK));
+    }
+
+    @Test
+    void bareNumbersSideBySideAreColumnsNotASum() {
+        // OCR of a table glues the next column on: "1180 4" is 1180 then noise, not 1184.
+        assertEquals(OptionalLong.of(1180), StackMath.parse("1180 4", STACK));
+        assertEquals(OptionalLong.of(1180), StackMath.parse("1180 4= 1100", STACK));
+        // A "+" or a unit says the parts belong together.
+        assertEquals(OptionalLong.of(8), StackMath.parse("3 + 5", STACK));
+        assertEquals(OptionalLong.of(3 * 64 + 5), StackMath.parse("3 st 5", STACK));
     }
 
     @Test

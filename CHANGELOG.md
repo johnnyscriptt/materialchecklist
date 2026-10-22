@@ -15,6 +15,8 @@ All notable changes to this project are documented here. The format follows
   forgives typos and common OCR mix-ups.
 - A game-font number reader, so amounts in Minecraft's own font (slashed zero and all) are read
   exactly rather than guessed.
+  It copes with rescaled and blurred web screenshots, and reads cells lined up in a column of
+  numbers as numbers even when the general OCR saw letters.
 - A review screen: every imported line is shown with its match and amount, and anything
   uncertain is marked for checking before it goes on the list.
 - A HUD checklist: have against need for every item, in stacks and shulker boxes, missing items
@@ -31,5 +33,7 @@ All notable changes to this project are documented here. The format follows
 ### Known limitations
 
 - OCR reads English printed text only.
+- A row covered by a hover tooltip in the screenshot can be missed; the review screen shows what
+  was read so it can be added by hand.
 - Items match by type; enchantments and names are ignored.
 - A tracked shulker box that is picked up and placed elsewhere needs marking again.

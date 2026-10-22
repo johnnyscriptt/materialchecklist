@@ -22,6 +22,12 @@ import java.util.List;
 public final class BitmapDigitReader {
     /** Share of a glyph's cells allowed to disagree with the template. */
     static final double MAX_DISTANCE = 0.14;
+    /**
+     * The allowance when the word is already known to hold digits, so the question is only
+     * which digits. Rescaled web screenshots land around 1.6 screen pixels per font pixel,
+     * where blur and shadow leave even the right glyph a few cells off.
+     */
+    static final double LENIENT_DISTANCE = 0.22;
     /** A cell counts as ink when this much of it is ink. */
     private static final double CELL_INK = 0.4;
     /** Contrast below which there is no text worth reading. */
@@ -36,6 +42,12 @@ public final class BitmapDigitReader {
      * @return the characters read, or null when they don't look like this font
      */
     public static String read(BufferedImage image, Rectangle box, GlyphSet glyphs) {
+        return read(image, box, glyphs, false);
+    }
+
+    /** @param lenient the word is known to be a number, so tolerate a softer match */
+    public static String read(BufferedImage image, Rectangle box, GlyphSet glyphs, boolean lenient) {
+        double maxDistance = lenient ? LENIENT_DISTANCE : MAX_DISTANCE;
         if (glyphs.isEmpty() || box.width <= 0 || box.height <= 0) {
             return null;
         }
@@ -94,7 +106,7 @@ public final class BitmapDigitReader {
         // Digits are seven rows tall; a comma reaches an eighth. Try both, keep the better read.
         Read best = null;
         for (int rows : new int[]{DIGIT_ROWS, DIGIT_ROWS + 1}) {
-            Read read = readRuns(ink, runs, top, (double) height / rows, glyphs);
+            Read read = readRuns(ink, runs, top, (double) height / rows, glyphs, maxDistance);
             if (read != null && (best == null || read.distance < best.distance)) {
                 best = read;
             }
@@ -105,7 +117,8 @@ public final class BitmapDigitReader {
     private record Read(String text, double distance) {
     }
 
-    private static Read readRuns(boolean[][] ink, List<int[]> runs, int top, double s, GlyphSet glyphs) {
+    private static Read readRuns(boolean[][] ink, List<int[]> runs, int top, double s, GlyphSet glyphs,
+                                 double maxDistance) {
         StringBuilder text = new StringBuilder();
         double total = 0;
         int count = 0;
@@ -121,7 +134,7 @@ public final class BitmapDigitReader {
             double pieceWidth = pieces == 1 ? width : pitch - s;
             for (int i = 0; i < pieces; i++) {
                 double x0 = run[0] + i * pitch;
-                Match match = classify(ink, x0, pieceWidth, top, s, glyphs);
+                Match match = classify(ink, x0, pieceWidth, top, s, glyphs, maxDistance);
                 if (match == null) {
                     return null;
                 }
@@ -136,7 +149,8 @@ public final class BitmapDigitReader {
     private record Match(char character, double distance) {
     }
 
-    private static Match classify(boolean[][] ink, double x0, double pieceWidth, int top, double s, GlyphSet glyphs) {
+    private static Match classify(boolean[][] ink, double x0, double pieceWidth, int top, double s, GlyphSet glyphs,
+                                  double maxDistance) {
         double fontWidth = pieceWidth / s;
         Match best = null;
         for (GlyphSet.Glyph glyph : glyphs.glyphs()) {
@@ -156,11 +170,39 @@ public final class BitmapDigitReader {
             }
             double distance = (double) mismatches / (glyph.width() * GlyphSet.ROWS)
                     + 0.04 * Math.abs(glyph.width() - fontWidth);
+            distance = Math.min(distance, shadowedDistance(ink, glyph, x0, fontWidth, top, s));
             if (best == null || distance < best.distance) {
                 best = new Match(glyph.character(), distance);
             }
         }
-        return best == null || best.distance > MAX_DISTANCE ? null : best;
+        return best == null || best.distance > maxDistance ? null : best;
+    }
+
+    /**
+     * The same comparison, for when the drop shadow has bled into the ink (a rescaled or
+     * compressed screenshot): the glyph is one column wider and one row taller, and the cells
+     * only the shadow covers could be either, so they are left out of the count.
+     */
+    private static double shadowedDistance(boolean[][] ink, GlyphSet.Glyph glyph, double x0, double fontWidth,
+                                           int top, double s) {
+        int cols = glyph.width() + 1;
+        int mismatches = 0;
+        int counted = 0;
+        for (int r = 0; r < GlyphSet.ROWS; r++) {
+            for (int c = 0; c < cols; c++) {
+                boolean want = c < glyph.width() && glyph.ink()[r][c];
+                boolean shadowOnly = !want && r > 0 && c > 0 && glyph.ink()[r - 1][c - 1];
+                if (shadowOnly) {
+                    continue;
+                }
+                boolean seen = fraction(ink, x0 + c * s, x0 + (c + 1) * s, top + r * s, top + (r + 1) * s) >= CELL_INK;
+                counted++;
+                if (seen != want) {
+                    mismatches++;
+                }
+            }
+        }
+        return counted == 0 ? 1.0 : (double) mismatches / counted + 0.04 * Math.abs(cols - fontWidth);
     }
 
     /** Share of ink pixels in a cell given in fractional crop coordinates. */

@@ -43,6 +43,15 @@ configurations {
     include.extendsFrom ocrLibs
 }
 
+// -PinstanceMods=<a .minecraft/mods folder> also loads the rendering and Litematica-family mods
+// from that folder into the dev and gametest clients, to check the mod alongside a real setup.
+if (project.hasProperty("instanceMods")) {
+    dependencies {
+        localRuntime fileTree(dir: project.property("instanceMods"),
+                include: ["sodium-*.jar", "iris-*.jar", "litematica-*.jar", "malilib-*.jar", "minihud-*.jar"])
+    }
+}
+
 // The store-shot gametest reads the upload pack's sample Litematica frame through the real
 // screenshot import, if make_litematica_frame.py has produced one.
 tasks.matching { it.name == "runClientGameTest" }.configureEach {

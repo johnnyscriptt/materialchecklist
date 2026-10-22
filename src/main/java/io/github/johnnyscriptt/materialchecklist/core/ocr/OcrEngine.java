@@ -40,6 +40,7 @@ public final class OcrEngine implements AutoCloseable {
      */
     private static final double SAME_NUMBER_GAP = 0.35;
     private static final Pattern NUMBER = Pattern.compile("[0-9][0-9,.]*");
+    private static final Pattern HAS_DIGIT = Pattern.compile("[0-9]");
 
     private final TessBaseAPI api;
 
@@ -83,6 +84,7 @@ public final class OcrEngine implements AutoCloseable {
 
     private record Word(String text, Rectangle box, boolean lineStart) {
     }
+
 
     private String assemble(BufferedImage image, int scale, GlyphSet numberGlyphs) {
         List<Word> words = words(scale);
@@ -147,8 +149,25 @@ public final class OcrEngine implements AutoCloseable {
     private static List<Word> rereadNumbers(BufferedImage image, List<Word> words, GlyphSet glyphs) {
         List<Word> read = new ArrayList<>(words.size());
         for (Word word : words) {
-            String digits = BitmapDigitReader.read(image, word.box(), glyphs);
+            String digits = BitmapDigitReader.read(image, word.box(), glyphs, HAS_DIGIT.matcher(word.text()).find());
             read.add(digits == null ? word : new Word(digits, word.box(), word.lineStart()));
+        }
+        // Second pass: cells lined up under a column of numbers are numbers too.
+        boolean[] numeric = new boolean[read.size()];
+        List<Rectangle> boxes = new ArrayList<>(read.size());
+        for (int i = 0; i < read.size(); i++) {
+            numeric[i] = NUMBER.matcher(read.get(i).text()).matches();
+            boxes.add(read.get(i).box());
+        }
+        boolean[] suspects = NumberColumns.suspects(boxes, numeric);
+        for (int i = 0; i < read.size(); i++) {
+            if (suspects[i]) {
+                Word word = read.get(i);
+                String digits = BitmapDigitReader.read(image, word.box(), glyphs, true);
+                if (digits != null) {
+                    read.set(i, new Word(digits, word.box(), word.lineStart()));
+                }
+            }
         }
         List<Word> merged = new ArrayList<>(read.size());
         for (Word word : read) {
@@ -157,7 +176,7 @@ public final class OcrEngine implements AutoCloseable {
                     && NUMBER.matcher(word.text()).matches()
                     && word.box().x - right(last) < SAME_NUMBER_GAP * Math.max(last.box().height, word.box().height)) {
                 Rectangle union = last.box().union(word.box());
-                String digits = BitmapDigitReader.read(image, union, glyphs);
+                String digits = BitmapDigitReader.read(image, union, glyphs, true);
                 merged.set(merged.size() - 1, new Word(digits != null ? digits : last.text() + word.text(),
                         union, last.lineStart()));
             } else {

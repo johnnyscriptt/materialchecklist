@@ -91,7 +91,8 @@ class OcrAccuracyTest {
         for (String name : FIXTURES) {
             BufferedImage image = ImageIO.read(resource("/ocr/" + name + ".png"));
             List<Entry> expected = expected(name);
-            tests.add(DynamicTest.dynamicTest(name, () -> score(name, image, expected)));
+            double required = REQUIRED;
+            tests.add(DynamicTest.dynamicTest(name, () -> score(name, image, expected, required)));
         }
         return tests;
     }
@@ -111,12 +112,16 @@ class OcrAccuracyTest {
     }
 
     private static void score(String label, BufferedImage image, List<Entry> expected) {
+        score(label, image, expected, REQUIRED);
+    }
+
+    private static void score(String label, BufferedImage image, List<Entry> expected, double required) {
         String raw = engine.recognize(image, numbers);
         List<Entry> read = ListParser.toEntries(parser.parse(OcrCleanup.clean(raw)));
         long hits = expected.stream().filter(read::contains).count();
         String report = label + ": " + hits + "/" + expected.size() + "\nraw:\n" + raw + "\nread: " + read;
         System.out.println(report);
-        assertTrue(hits >= Math.ceil(expected.size() * REQUIRED), report);
+        assertTrue(hits >= Math.ceil(expected.size() * required), report);
     }
 
     /**
@@ -196,6 +201,10 @@ class OcrAccuracyTest {
         return out;
     }
 
+    /** Where the game's name isn't the id title-cased, as real screenshots show it. */
+    private static final java.util.Map<String, String> REAL_NAMES = java.util.Map.of(
+            "redstone_block", "Block of Redstone");
+
     /** Vanilla item ids with names made from them ("oak_planks" to "Oak Planks"), close to the real ones. */
     static List<Candidate> vanillaItems() throws IOException {
         List<Candidate> out = new ArrayList<>();
@@ -206,6 +215,7 @@ class OcrAccuracyTest {
             }
             String name = String.join(" ", Arrays.stream(path.split("_"))
                     .map(w -> w.substring(0, 1).toUpperCase(Locale.ROOT) + w.substring(1)).toList());
+            name = REAL_NAMES.getOrDefault(path, name);
             out.add(new Candidate("minecraft:" + path, name, 64));
         }
         return out;

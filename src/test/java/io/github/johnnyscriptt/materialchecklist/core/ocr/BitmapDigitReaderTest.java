@@ -88,6 +88,39 @@ class BitmapDigitReaderTest {
     }
 
     @Test
+    void readsDigitsWhoseShadowHasBledIntoThem() throws IOException {
+        // A GUI-scale-2 screenshot shown at 80% on a web page (1.6 screen pixels per font
+        // pixel): smoothing smears the text into its shadow, so glyphs read as glyph-plus-shadow.
+        // Modelled on the real Litematica screenshot in the OCR fixtures.
+        for (String number : new String[]{"1207", "1066", "1180", "1206"}) {
+            BufferedImage sharp = render(number, 2, true, new Color(30, 30, 30), Color.WHITE);
+            BufferedImage soft = jpeg(shrink(sharp, 0.8), 0.9f);
+            assertEquals(number, BitmapDigitReader.read(soft, all(soft), GLYPHS, true), number);
+        }
+    }
+
+    @Test
+    void wordsThatAreNotNumbersStayStrict() {
+        // A solid bar is nothing like a digit at any tolerance, and the strict reading the
+        // engine uses for words without digits must still refuse a blurred number.
+        BufferedImage sharp = renderWithShadow("1207", 3, new Color(30, 30, 30), Color.WHITE, new Color(200, 200, 200));
+        assertNull(BitmapDigitReader.read(BitmapDigitReaderTest.blurred(sharp), all(sharp), GLYPHS, false));
+    }
+
+    static BufferedImage blurred(BufferedImage sharp) {
+        try {
+            BufferedImage soft = jpeg(shrink(shrink(sharp, 0.5), 1.25), 0.85f);
+            BufferedImage out = new BufferedImage(sharp.getWidth(), sharp.getHeight(), BufferedImage.TYPE_INT_RGB);
+            Graphics2D g = out.createGraphics();
+            g.drawImage(soft, 0, 0, null);
+            g.dispose();
+            return out;
+        } catch (IOException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    @Test
     void onlyReadsInsideTheBoxItIsGiven() {
         BufferedImage image = render("12   34", 3, true, new Color(20, 20, 20), Color.WHITE);
         int digitW = 6 * 3;
@@ -115,6 +148,15 @@ class BitmapDigitReaderTest {
 
     static Rectangle all(BufferedImage image) {
         return new Rectangle(0, 0, image.getWidth(), image.getHeight());
+    }
+
+    static BufferedImage renderWithShadow(String text, int scale, Color background, Color ink, Color shadow) {
+        BufferedImage image = render(text, scale, false, background, ink);
+        Graphics2D g = image.createGraphics();
+        draw(g, text, scale, 3, 3, shadow);
+        draw(g, text, scale, 2, 2, ink);
+        g.dispose();
+        return image;
     }
 
     /** Draws {@code text} in the test font; a space advances four font pixels, as in game. */
