@@ -15,12 +15,14 @@ upload-pack/
 │  ├─ clean/                        the same six without captions
 │  └─ captions.md                   title + description for each image
 ├─ icon/
-│  ├─ modrinth-icon-512.png         512x512, under Modrinth's 256 KiB cap
-│  ├─ curseforge-avatar-400.png     400x400
-│  ├─ mod-icon-128.png              already in the jar as the mod-list icon
+│  ├─ modrinth-icon-512.png         in-game render (Book and Quill + chest), Modrinth only allows non-AI images
+│  ├─ mod-icon-128.png              the same render, also in the jar as the mod-list icon
+│  ├─ render-icon-1024.png          the render at full size (IconRenderGameTest + brand_icon.py render)
+│  ├─ curseforge-avatar-400.png     the ChatGPT icon, CurseForge only
 │  └─ source-icon-1254*.png         the ChatGPT original, plus a transparent-corner copy
 ├─ files/
-│  └─ materialchecklist-0.1.0.jar   the upload (main jar only, never -sources)
+│  ├─ materialchecklist-0.1.0.jar   the published 0.1.0 (ChatGPT icon inside)
+│  └─ materialchecklist-0.1.1.jar   next upload, in-game-render icon (main jar only, never -sources)
 ├─ work/litematica-frame.png        the sample "video frame" used for gallery shot 02
 ├─ make_litematica_frame.py         regenerates that frame from the game's font
 └─ make_store_images.py             rebuilds gallery/ from a gametest run
@@ -62,7 +64,7 @@ Create project, Mod, Fabric.
 | Slug | `material-checklist` |
 | Summary | line 2 of `copy/summary.txt` |
 | Description | `copy/description-modrinth.md` |
-| Icon | `icon/modrinth-icon-512.png` |
+| Icon | `icon/modrinth-icon-512.png` (in-game render, never the ChatGPT art) |
 | Categories | **Utility**, **Storage**, **Management** |
 | Client side | **Required** |
 | Server side | **Optional**: lists, import, HUD and inventory counting work without it; tracking and Find need it |
@@ -84,7 +86,7 @@ Create project, Minecraft, Mods.
 | Name | `Material Checklist` |
 | Summary | same line from `copy/summary.txt` |
 | Description | `copy/description-curseforge.html` (click the source button first) |
-| Avatar | `icon/curseforge-avatar-400.png` |
+| Avatar | `icon/curseforge-avatar-400.png` (ChatGPT art; CurseForge allows it) |
 | Categories | **Utility & QoL**, **Storage**, **Map and Information** |
 | License | MIT |
 
